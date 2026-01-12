@@ -10,9 +10,9 @@ This is the official code implementation of YOLO-WL for the *Sensors* journal pa
 Network structure of YOLO-WL
 </div>	
 
+## 1-MSDDSC Module
 
-
-## 2. MLKSA mechanism
+## 2-MLKSA mechanism
 
 <div align="center">
     <img src="Fig. 3-Illustration of MLKSA mechanism.png" width="600">
@@ -74,3 +74,5 @@ class MLKSA(nn.Module):
         weights = self.fusion(fused)
         return x * weights    
 ```
+
+## 3-SSA-PAN network
