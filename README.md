@@ -13,6 +13,16 @@ Network structure of YOLO-WL
 
 
 ## 2. MLKSA mechanism
+
+<div align="center">
+    <img src="Fig. 3-Illustration of MLKSA mechanism.png" width="600">
+</div>
+
+<div align="center">​ 
+Illustration of MLKSA mechanism
+</div>	
+
+
 ```python
 class MLKSA(nn.Module):
     """
