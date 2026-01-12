@@ -19,7 +19,61 @@ Network structure of YOLO-WL
 The structure of C2f-MSDDSC module
 </div>	
 
+```python
+class MSDDSC(nn.Module):
+    "Multi-Scale Dilated Depthwise Separable Convolution"
+    def __init__(self, c1, c2, shortcut=True, g=1, k=(3,3), e=0.5, dilation_rates=(1,3,5,7,9)):
+        super().__init__()
+        c_ = int(c2 * e)
+        self.cv1 = Conv(c1, c_, 1, 1)
 
+        self.dilated_convs = nn.ModuleList()
+        for rate in dilation_rates:
+            self.dilated_convs.append(
+                nn.Sequential(
+                    nn.Conv2d(c_, c_, kernel_size=k[1], stride=1, padding=rate, dilation=rate, groups=c_, bias=False),
+                    nn.Conv2d(c_, c2, kernel_size=1, stride=1, padding=0, bias=False),
+                    nn.BatchNorm2d(c2),
+                    nn.SiLU()
+                )
+            )
+        
+        self.cv2 = Conv(5*c2, c2, 1, 1)
+        self.add = shortcut and c1 == c2
+
+    def forward(self, x):
+        identity = x
+        x = self.cv1(x)
+
+        features = []
+        for conv in self.dilated_convs:
+            features.append(conv(x))
+        x_concat = torch.cat(features, dim=1)
+        y = self.cv2(x_concat)
+        
+        if self.add:
+            y = y + identity
+        return y
+    
+
+class C2f_MSDDSC(nn.Module):
+    def __init__(self, c1, c2, n=1, shortcut=False, g=1, e=0.5):
+        super().__init__()
+        self.c = int(c2 * e)  
+        self.cv1 = Conv(c1, 2*self.c, 1, 1)
+        self.cv2 = Conv((2+n) * self.c, c2, 1)  
+        self.m = nn.Sequential(*(MSDDSC(self.c, self.c, shortcut, g, k=(3,3), e=0.5) for _ in range(n)))
+        
+    def forward(self, x):
+        y = list(self.cv1(x).chunk(2, 1))
+        y.extend(m(y[-1]) for m in self.m)
+        return self.cv2(torch.cat(y, 1))
+
+    def forward_split(self, x):
+        y = list(self.cv1(x).split((self.c, self.c), 1))
+        y.extend(m(y[-1]) for m in self.m)
+        return self.cv2(torch.cat(y, 1))
+```
 
 
 ## 2-MLKSA mechanism
