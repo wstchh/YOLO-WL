@@ -11,6 +11,16 @@ Network structure of YOLO-WL
 </div>	
 
 ## 1-MSDDSC module
+<div align="center">
+    <img src="Fig. 2-The structure of C2f-MSDDSC module.png" width="600">
+</div>
+
+<div align="center">​ 
+The structure of C2f-MSDDSC module
+</div>	
+
+
+
 
 ## 2-MLKSA mechanism
 
