@@ -140,3 +140,116 @@ class MLKSA(nn.Module):
 ```
 
 ## 3-SSA-PAN network
+
+<div align="center">
+    <img src="Fig. 4-SSA-PAN network schematic.png" width="600">
+</div>
+
+<div align="center">​ 
+SSA-PAN network schematic
+</div>	
+
+```python
+class MultiScaleSpatialAttention(nn.Module):
+    def __init__(self, kernel_sizes=None, fusion_type='learnable'):
+        super(MultiScaleSpatialAttention, self).__init__()
+        if kernel_sizes is None:
+            kernel_sizes = [5, 7, 9, 11, 13]  
+        
+        self.kernel_sizes = kernel_sizes
+        self.fusion_type = fusion_type
+        
+        # Multi-branch convolution: each branch processes the concatenated [avg, max] features
+        self.branches = nn.ModuleList()
+        for k in kernel_sizes:
+            padding = k // 2
+            self.branches.append(
+                nn.Sequential(
+                    nn.Conv2d(2, 1, kernel_size=k, padding=padding, bias=False),
+                    nn.BatchNorm2d(1)
+                )
+            )
+        
+        # Learnable fusion weights
+        if fusion_type == 'learnable':
+            self.scale_weights = nn.Parameter(torch.ones(len(kernel_sizes)), requires_grad=True)
+        
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        b, c, h, w = x.size()
+        
+        # Global channel compression
+        avg_out = torch.mean(x, dim=1, keepdim=True)     # (b, 1, h, w)
+        max_out, _ = torch.max(x, dim=1, keepdim=True)   # (b, 1, h, w)
+        attention_input = torch.cat([avg_out, max_out], dim=1)  # (b, 2, h, w)
+
+        scale_outputs = []
+        for i, branch in enumerate(self.branches):
+            out = branch(attention_input)
+            if self.fusion_type == 'learnable':
+                out = self.scale_weights[i] * out
+            scale_outputs.append(out)
+        
+        if self.fusion_type == 'learnable':
+            attention_map = torch.sum(torch.stack(scale_outputs, dim=0), dim=0)
+        else:
+            attention_map = torch.mean(torch.stack(scale_outputs, dim=0), dim=0)  
+        
+        attention_map = self.sigmoid(attention_map)  # (b, 1, h, w)
+        return x * attention_map
+
+    def get_fusion_weights(self):
+        if self.fusion_type == 'learnable':
+            return F.softmax(self.scale_weights, dim=0).detach().cpu().numpy()
+        else:
+            return None
+
+
+class SGF-2(nn.Module):
+    def __init__(self, dimension=1, init_value=1.0):
+        super(SGF-2, self).__init__()
+        self.dim = dimension
+
+        # Learnable weight parameters
+        self.w = nn.Parameter(torch.full((2,), init_value, dtype=torch.float32), requires_grad=True)
+
+        self.spatial_attention = MultiScaleSpatialAttention()
+
+
+    def forward(self, x_list):
+        assert len(x_list) == 2, "Input should be a list of 2 feature maps."
+        # Weighted summation
+        x0 = self.w[0] * x_list[0]
+        x1 = self.w[1] * x_list[1]
+        x_cat = torch.cat([x0 ,x1], dim=self.dim)
+
+        # Spatial Attention enhancement
+        fused = self.spatial_attention(x_cat)
+        return fused
+
+
+class SGF-3(nn.Module):
+    def __init__(self, dimension=1, init_value=1.0):
+        super(SGF-3, self).__init__()
+        self.dim = dimension
+
+        # Learnable weight parameters
+        self.w = nn.Parameter(torch.full((3,), init_value, dtype=torch.float32), requires_grad=True)
+
+        self.spatial_attention = MultiScaleSpatialAttention()
+
+
+    def forward(self, x_list):
+        assert len(x_list) == 3, "Input should be a list of 3 feature maps."
+        # Weighted summation
+        x0 = self.w[0] * x_list[0]
+        x1 = self.w[1] * x_list[1]
+        x2 = self.w[2] * x_list[2]
+        x_cat = torch.cat([x0, x1, x2], dim=self.dim)
+
+        # Spatial Attention enhancement
+        fused = self.spatial_attention(x_cat)
+        return fused
+
+```
