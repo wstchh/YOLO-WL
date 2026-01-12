@@ -7,7 +7,7 @@ This is the official code implementation of YOLO-WL for the *Sensors* journal pa
 </div>
 
 <div align="center">​ 
-Network structure of MS-RDDNet
+Network structure of YOLO-WL
 </div>	
 
 
