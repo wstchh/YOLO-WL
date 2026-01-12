@@ -10,7 +10,7 @@ This is the official code implementation of YOLO-WL for the *Sensors* journal pa
 Network structure of YOLO-WL
 </div>	
 
-## 1-MSDDSC Module
+## 1-MSDDSC module
 
 ## 2-MLKSA mechanism
 
