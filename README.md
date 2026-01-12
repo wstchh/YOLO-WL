@@ -1,5 +1,16 @@
 # YOLO-WL
-A Lightweight and Efficient Framework for UAV Based Wildlife Detection
+
+This is the official code implementation of MS-RDDNet for the *Sensors* journal paper: **"YOLO-WL: A Lightweight and Efficient Framework for UAV-Based Wildlife Detection"**
+
+<div align="center">
+    <img src="Fig. 1-Network structure of MS-RDDNet.png" width="600">
+</div>
+
+<div align="center">​ 
+Network structure of MS-RDDNet
+</div>	
+
+
 
 ## 2. MLKSA mechanism
 ```python
