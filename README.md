@@ -1,6 +1,6 @@
 # YOLO-WL
 
-This is the official code implementation of MS-RDDNet for the *Sensors* journal paper: **"YOLO-WL: A Lightweight and Efficient Framework for UAV-Based Wildlife Detection"**
+This is the official code implementation of YOLO-WL for the *Sensors* journal paper: **"YOLO-WL: A Lightweight and Efficient Framework for UAV-Based Wildlife Detection"**
 
 <div align="center">
     <img src="Fig. 1-Network structure of YOLO-WL.png" width="600">
